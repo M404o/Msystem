@@ -2,31 +2,326 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>テスト</title>
+    <title>企業メール追跡ダッシュボード</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        .card { background: white; border: 1px solid #ddd; padding: 20px; margin: 10px; border-radius: 8px; }
+        body { font-family: Arial, sans-serif; padding: 20px; background: linear-gradient(to bottom right, #fdf2f8, #f3e8ff); margin: 0; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .card { background: white; border: 2px solid #e5e7eb; padding: 20px; margin: 10px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card:hover { box-shadow: 0 8px 15px rgba(0,0,0,0.15); transition: all 0.3s; }
+        .btn { background: #8b5cf6; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; margin: 5px; }
+        .btn:hover { background: #7c3aed; }
+        .btn-secondary { background: #6b7280; }
+        .btn-secondary:hover { background: #4b5563; }
+        .btn-danger { background: #ef4444; }
+        .btn-danger:hover { background: #dc2626; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .input { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; margin: 5px 0; }
+        .textarea { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; margin: 5px 0; resize: vertical; }
+        .select { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; margin: 5px 0; }
+        .status-replied { border-color: #10b981; background: #d1fae5; }
+        .status-waiting { border-color: #f59e0b; background: #fef3c7; }
+        .status-no_response { border-color: #ef4444; background: #fee2e2; }
+        .status-follow_up { border-color: #3b82f6; background: #dbeafe; }
+        .flex { display: flex; align-items: center; gap: 10px; }
+        .justify-between { justify-content: space-between; }
+        .text-center { text-align: center; }
+        .mb-4 { margin-bottom: 16px; }
+        .mb-6 { margin-bottom: 24px; }
+        .p-4 { padding: 16px; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
     <div id="root"></div>
     
     <script type="text/babel">
-        function App() {
+        function EmailTracker() {
+            const [companies, setCompanies] = React.useState([]);
+            const [showForm, setShowForm] = React.useState(false);
+            const [editingId, setEditingId] = React.useState(null);
+            const [formData, setFormData] = React.useState({
+                name: '',
+                sentDate: '',
+                emailCount: 1,
+                status: 'waiting',
+                lastResponse: '',
+                notes: ''
+            });
+
+            // サンプルデータの読み込み
+            React.useEffect(() => {
+                const saved = localStorage.getItem('emailTracker');
+                if (saved) {
+                    setCompanies(JSON.parse(saved));
+                } else {
+                    const sampleData = [
+                        {
+                            id: 1,
+                            name: 'CultureAmp',
+                            sentDate: '2025-07-15',
+                            emailCount: 1,
+                            status: 'replied',
+                            lastResponse: 'サポート担当に伝えますの返事あり',
+                            notes: ''
+                        },
+                        {
+                            id: 2,
+                            name: 'Greenhouse',
+                            sentDate: '2025-07-16',
+                            emailCount: 1,
+                            status: 'waiting',
+                            lastResponse: '',
+                            notes: ''
+                        },
+                        {
+                            id: 3,
+                            name: '15Five',
+                            sentDate: '2025-07-17',
+                            emailCount: 1,
+                            status: 'no_response',
+                            lastResponse: '',
+                            notes: ''
+                        }
+                    ];
+                    setCompanies(sampleData);
+                    localStorage.setItem('emailTracker', JSON.stringify(sampleData));
+                }
+            }, []);
+
+            const saveData = (data) => {
+                localStorage.setItem('emailTracker', JSON.stringify(data));
+            };
+
+            const handleSubmit = () => {
+                if (!formData.name || !formData.sentDate) return;
+                
+                if (editingId) {
+                    const updated = companies.map(company => 
+                        company.id === editingId ? { ...formData, id: editingId } : company
+                    );
+                    setCompanies(updated);
+                    saveData(updated);
+                } else {
+                    const newCompany = { ...formData, id: Date.now() };
+                    const updated = [...companies, newCompany];
+                    setCompanies(updated);
+                    saveData(updated);
+                }
+                
+                resetForm();
+            };
+
+            const resetForm = () => {
+                setFormData({
+                    name: '',
+                    sentDate: '',
+                    emailCount: 1,
+                    status: 'waiting',
+                    lastResponse: '',
+                    notes: ''
+                });
+                setShowForm(false);
+                setEditingId(null);
+            };
+
+            const handleEdit = (company) => {
+                setFormData(company);
+                setEditingId(company.id);
+                setShowForm(true);
+            };
+
+            const handleDelete = (id) => {
+                const updated = companies.filter(company => company.id !== id);
+                setCompanies(updated);
+                saveData(updated);
+            };
+
+            const getStatusText = (status) => {
+                switch (status) {
+                    case 'replied': return '✅ 返事あり';
+                    case 'waiting': return '⏰ 待機中';
+                    case 'no_response': return '❌ 未返信';
+                    case 'follow_up': return '⚠️ フォローアップ予定';
+                    default: return '❓ 不明';
+                }
+            };
+
             return (
-                <div>
-                    <h1>🎉 動いてる！</h1>
-                    <div className="card">
-                        <p>GitHub Pages でReactが動いてます✨</p>
+                <div className="container">
+                    <div className="mb-6">
+                        <h1 style={{fontSize: '2rem', fontWeight: 'bold', color: '#374151', marginBottom: '8px'}}>
+                            📧 企業メール追跡ダッシュボード
+                        </h1>
+                        <p style={{color: '#6b7280'}}>診断システムの提案状況を一目で管理✨</p>
                     </div>
+
+                    {/* 統計 */}
+                    <div className="stats">
+                        <div className="card" style={{borderColor: '#8b5cf6'}}>
+                            <div className="flex">
+                                <span style={{fontSize: '2rem'}}>📧</span>
+                                <div>
+                                    <p style={{fontSize: '0.875rem', color: '#6b7280'}}>総企業数</p>
+                                    <p style={{fontSize: '1.5rem', fontWeight: 'bold'}}>{companies.length}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="card" style={{borderColor: '#10b981'}}>
+                            <div className="flex">
+                                <span style={{fontSize: '2rem'}}>✅</span>
+                                <div>
+                                    <p style={{fontSize: '0.875rem', color: '#6b7280'}}>返事あり</p>
+                                    <p style={{fontSize: '1.5rem', fontWeight: 'bold'}}>
+                                        {companies.filter(c => c.status === 'replied').length}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="card" style={{borderColor: '#f59e0b'}}>
+                            <div className="flex">
+                                <span style={{fontSize: '2rem'}}>⏰</span>
+                                <div>
+                                    <p style={{fontSize: '0.875rem', color: '#6b7280'}}>待機中</p>
+                                    <p style={{fontSize: '1.5rem', fontWeight: 'bold'}}>
+                                        {companies.filter(c => c.status === 'waiting').length}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="card" style={{borderColor: '#ef4444'}}>
+                            <div className="flex">
+                                <span style={{fontSize: '2rem'}}>❌</span>
+                                <div>
+                                    <p style={{fontSize: '0.875rem', color: '#6b7280'}}>未返信</p>
+                                    <p style={{fontSize: '1.5rem', fontWeight: 'bold'}}>
+                                        {companies.filter(c => c.status === 'no_response').length}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 追加ボタン */}
+                    <div className="mb-6">
+                        <button onClick={() => setShowForm(!showForm)} className="btn">
+                            ➕ 新しい企業を追加
+                        </button>
+                    </div>
+
+                    {/* フォーム */}
+                    {showForm && (
+                        <div className="card mb-6">
+                            <h2 className="mb-4" style={{fontSize: '1.25rem', fontWeight: '600'}}>
+                                {editingId ? '企業情報を編集' : '新しい企業を追加'}
+                            </h2>
+                            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px'}}>
+                                <div>
+                                    <label style={{display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '4px'}}>企業名</label>
+                                    <input
+                                        type="text"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                        className="input"
+                                        placeholder="CultureAmp"
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <label style={{display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '4px'}}>送信日</label>
+                                    <input
+                                        type="date"
+                                        value={formData.sentDate}
+                                        onChange={(e) => setFormData({...formData, sentDate: e.target.value})}
+                                        className="input"
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <label style={{display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '4px'}}>現在の状態</label>
+                                    <select
+                                        value={formData.status}
+                                        onChange={(e) => setFormData({...formData, status: e.target.value})}
+                                        className="select"
+                                    >
+                                        <option value="waiting">待機中</option>
+                                        <option value="replied">返事あり</option>
+                                        <option value="no_response">未返信</option>
+                                        <option value="follow_up">フォローアップ予定</option>
+                                    </select>
+                                </div>
+                                
+                                <div style={{gridColumn: '1 / -1'}}>
+                                    <label style={{display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '4px'}}>最後の返事内容</label>
+                                    <input
+                                        type="text"
+                                        value={formData.lastResponse}
+                                        onChange={(e) => setFormData({...formData, lastResponse: e.target.value})}
+                                        className="input"
+                                        placeholder="サポート担当に伝えますの返事あり"
+                                    />
+                                </div>
+                                
+                                <div style={{gridColumn: '1 / -1'}}>
+                                    <button onClick={handleSubmit} className="btn">
+                                        {editingId ? '更新' : '追加'}
+                                    </button>
+                                    <button onClick={resetForm} className="btn btn-secondary">
+                                        キャンセル
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 企業リスト */}
+                    <div className="grid">
+                        {companies.map((company) => (
+                            <div key={company.id} className={`card status-${company.status}`}>
+                                <div className="flex justify-between mb-4">
+                                    <h3 style={{fontSize: '1.125rem', fontWeight: '600'}}>{company.name}</h3>
+                                    <div>
+                                        <button onClick={() => handleEdit(company)} style={{background: 'none', border: 'none', cursor: 'pointer', margin: '0 5px'}}>
+                                            ✏️
+                                        </button>
+                                        <button onClick={() => handleDelete(company.id)} style={{background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444'}}>
+                                            🗑️
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div style={{fontSize: '0.875rem', lineHeight: '1.5'}}>
+                                    <p>📅 送信日: {company.sentDate}</p>
+                                    <p>📧 {company.emailCount}回目のメール</p>
+                                    <p>{getStatusText(company.status)}</p>
+                                    
+                                    {company.lastResponse && (
+                                        <div style={{marginTop: '12px', padding: '12px', background: '#f9fafb', borderRadius: '8px'}}>
+                                            <p style={{fontSize: '0.875rem'}}>{company.lastResponse}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {companies.length === 0 && (
+                        <div className="text-center" style={{padding: '48px 0'}}>
+                            <p style={{fontSize: '1.125rem', color: '#6b7280'}}>まだ企業が追加されていません</p>
+                            <p style={{color: '#9ca3af'}}>上の「新しい企業を追加」ボタンから始めましょう！</p>
+                        </div>
+                    )}
                 </div>
             );
         }
 
-        ReactDOM.render(<App />, document.getElementById('root'));
+        ReactDOM.render(<EmailTracker />, document.getElementById('root'));
     </script>
 </body>
 </html>
