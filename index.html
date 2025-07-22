@@ -83,15 +83,107 @@
             const [showForm, setShowForm] = React.useState(false);
             const [editingId, setEditingId] = React.useState(null);
             const [formData, setFormData] = React.useState({
-                name: '',
-                sentDate: '',
-                emailCount: 1,
-                status: 'waiting',
-                lastResponse: '',
-                notes: ''
-            });
+    companyName: '',
+    contactPerson: '',
+    productURL: 'https://mindscape-demo.vercel.app',
+    senderName: 'M',
+    senderPosition: 'Project.M Founder',
+    senderEmail: 'm@example.com'
+  });
+  // GPTの6つのテンプレート
+  const emailTemplates = [
+    {
+      id: 1,
+      title: "①Icebreaker型",
+      type: "カジュアル・会話導入型", 
+      content: `Hi ${templateVars.contactPerson || '[担当者名]'},
 
-            // サンプルデータの読み込み
+I came across ${templateVars.companyName || '[企業名]'}'s recent work on employee engagement and was impressed by your data-driven approach.
+
+I've been developing Mindscape, a diagnostic tool that surfaces pre-burnout signals before they appear in traditional engagement scores. Given ${templateVars.companyName || '[企業名]'}'s focus on actionable insights, I thought it might be relevant.
+
+Would you be open to a brief conversation about how this might complement your current approach?
+
+Best regards,
+${templateVars.senderName}
+${templateVars.senderPosition}
+${templateVars.senderEmail}`
+    },
+    {
+      id: 2, 
+      title: "②Problem-aware型",
+      type: "課題前提の提案型",
+      content: `Dear ${templateVars.contactPerson || '[担当者名]'},
+
+${templateVars.companyName || '[企業名]'} has built an impressive platform for measuring employee engagement. However, I understand that traditional engagement surveys often miss early warning signs of burnout and disengagement.
+
+Mindscape addresses this gap by detecting pre-burnout signals through a 20-question diagnostic that reveals patterns engagement scores typically miss.
+
+Early results show teams using this approach identify at-risk employees ~14 days earlier and see an 11% improvement in retention.
+
+I'd love to explore how this might strengthen ${templateVars.companyName || '[企業名]'}'s existing capabilities.
+
+Warm regards,
+${templateVars.senderName}
+${templateVars.senderPosition}`
+    },
+    // 残りの4つも同様に...
+  ];
+
+  // メインタブの表示切り替え
+  if (activeMainTab === 'templates') {
+    return (
+      <div className="container">
+        {/* タブナビゲーション */}
+        <div className="mb-6">
+          <button onClick={() => setActiveMainTab('dashboard')} className="btn btn-secondary">
+            📊 ダッシュボード
+          </button>
+          <button onClick={() => setActiveMainTab('templates')} className="btn">
+            📧 メールテンプレ
+          </button>
+        </div>
+
+        <h1 style={{fontSize: '2rem', fontWeight: 'bold', marginBottom: '20px'}}>
+          📧 GPT メールテンプレート生成
+        </h1>
+
+        {/* テンプレ選択画面 */}
+        {!selectedTemplate ? (
+          <div className="grid">
+            {emailTemplates.map(template => (
+              <div key={template.id} className="card" style={{cursor: 'pointer'}} 
+                   onClick={() => setSelectedTemplate(template)}>
+                <h3 style={{fontWeight: 'bold', marginBottom: '10px'}}>{template.title}</h3>
+                <p style={{color: '#666', fontSize: '14px'}}>{template.type}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          /* テンプレ詳細画面は次で作ります */
+          <div>テンプレ詳細画面（次で実装）</div>
+        )}
+      </div>
+    );
+  }
+
+  // 既存のダッシュボード表示（activeMainTab === 'dashboard' の場合）
+  return (
+    <div className="container">
+      {/* タブナビゲーション */}
+      <div className="mb-6">
+        <button onClick={() => setActiveMainTab('dashboard')} className="btn">
+          📊 ダッシュボード  
+        </button>
+        <button onClick={() => setActiveMainTab('templates')} className="btn btn-secondary">
+          📧 メールテンプレ
+        </button>
+      </div>
+      
+      {/* 既存のダッシュボード内容 */}
+      {/* ... */}
+    </div>
+  );            // サンプルデータの読み込み
             React.useEffect(() => {
                 const saved = localStorage.getItem('emailTracker');
                 if (saved) {
