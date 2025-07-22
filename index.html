@@ -1,15 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>メール追跡ダッシュボード</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide-react@latest/dist/umd/lucide-react.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- アイコンの代わりにUnicodeを使用 -->
 </head>
 <body>
     <div id="root"></div>
-    <script type="text/babel" src="EmailTracker.jsx"></script>
+    
+    <script type="text/babel">
+        // Lucide アイコンの代わりにテキストアイコンを使用
+        const Plus = () => React.createElement('span', null, '➕');
+        const Edit3 = () => React.createElement('span', null, '✏️');
+        const Calendar = () => React.createElement('span', null, '📅');
+        const Mail = () => React.createElement('span', null, '📧');
+        const Clock = () => React.createElement('span', null, '⏰');
+        const CheckCircle = () => React.createElement('span', null, '✅');
+        const XCircle = () => React.createElement('span', null, '❌');
+        const AlertCircle = () => React.createElement('span', null, '⚠️');
+        const Eye = () => React.createElement('span', null, '👁️');
+        const ChevronLeft = () => React.createElement('span', null, '←');
+        const Copy = () => React.createElement('span', null, '📋');
+        const Target = () => React.createElement('span', null, '🎯');
+        const MessageSquare = () => React.createElement('span', null, '💬');
+        const CalendarDays = () => React.createElement('span', null, '📆');
+
+        // ここにEmailTrackerのコードを貼り付け（importとexportを除く）
+    </script>
 </body>
 </html>
