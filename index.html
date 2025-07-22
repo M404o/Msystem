@@ -1,51 +1,25 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">    <title>企業メール追跡ダッシュボード</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企業メール追跡ダッシュボード</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-/* スマホ対応追加CSS */
-@media (max-width: 768px) {
-  body {
-    font-size: 16px;
-    padding: 10px;
-  }
-  
-  .card {
-    padding: 15px !important;
-    margin: 8px 0 !important;
-    font-size: 14px;
-  }
-  
-  .btn {
-    padding: 12px 20px !important;
-    font-size: 16px !important;
-    margin: 8px 5px !important;
-    min-height: 44px; /* タッチしやすく */
-  }
-  
-  .stats {
-    grid-template-columns: 1fr 1fr !important; /* 2列に */
-  }
-  
-  .grid {
-    grid-template-columns: 1fr !important; /* 1列に */
-  }
-  
-  h1 {
-    font-size: 1.8rem !important;
-  }
-  
-  .input, .select, .textarea {
-    font-size: 16px !important; /* iOS のズーム防止 */
-    padding: 12px !important;
-  }
-}
+        /* スマホ対応CSS */
+        @media (max-width: 768px) {
+            body { font-size: 16px; padding: 10px; }
+            .card { padding: 15px !important; margin: 8px 0 !important; font-size: 14px; }
+            .btn { padding: 12px 20px !important; font-size: 16px !important; margin: 8px 5px !important; min-height: 44px; }
+            .stats { grid-template-columns: 1fr 1fr !important; }
+            .grid { grid-template-columns: 1fr !important; }
+            h1 { font-size: 1.8rem !important; }
+            .input, .select, .textarea { font-size: 16px !important; padding: 12px !important; }
+        }
+        
+        /* 既存のCSS */
         body { font-family: Arial, sans-serif; padding: 20px; background: linear-gradient(to bottom right, #fdf2f8, #f3e8ff); margin: 0; min-height: 100vh; }
         .container { max-width: 1200px; margin: 0 auto; }
         .card { background: white; border: 2px solid #e5e7eb; padding: 20px; margin: 10px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
@@ -82,7 +56,11 @@
             const [companies, setCompanies] = React.useState([]);
             const [showForm, setShowForm] = React.useState(false);
             const [editingId, setEditingId] = React.useState(null);
-            const [formData, setFormData] = React.useState({
+               // 新しく追加する state
+    const [activeMainTab, setActiveMainTab] = React.useState('dashboard');
+    const [selectedTemplate, setSelectedTemplate] = React.useState(null);
+    const [templateVars, setTemplateVars] = React.useState({
+
     companyName: '',
     contactPerson: '',
     productURL: 'https://mindscape-demo.vercel.app',
@@ -90,6 +68,14 @@
     senderPosition: 'Project.M Founder',
     senderEmail: 'm@example.com'
   });
+    const [formData, setFormData] = React.useState({
+    name: '',
+        sentDate: '',
+        emailCount: 1,
+        status: 'waiting',
+        lastResponse: '',
+        notes: ''
+    });
            // サンプルデータの読み込み
             React.useEffect(() => {
                 const saved = localStorage.getItem('emailTracker');
