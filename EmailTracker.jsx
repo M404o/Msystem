@@ -665,3 +665,5 @@ const EmailTracker = () => {
 };
 
 export default EmailTracker;
+// 一番最後に追加
+ReactDOM.render(React.createElement(EmailTracker), document.getElementById('root'));
